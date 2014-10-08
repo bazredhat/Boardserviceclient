@@ -62,6 +62,26 @@ Poker.PokerPacketHandler = Class.extend({
         var po = protocolObject;
         this.tableManager.handleBuyInInfo(this.tableId,po.balanceInWallet, po.balanceOnTable, po.maxAmount, po.minAmount,po.mandatoryBuyin, po.currencyCode);
     },
+   handleServiceTransportPacket : function(serviceTransportPacket) {
+        var gameData =  base64_decode(serviceTransportPacket.servicedata);
+        console.log(serviceTransportPacket);
+	//	if (serviceTransportPacket.length > 0) {
+     	    console.log("handleServiceTransportPacket*******************************************************");
+	    if (gameData.indexOf(";") > 0) {
+	    console.log("*******************************************************");
+		var values = gameData.split(/;/);
+		console.log(values);
+		var tableId =values[1];
+		console.log(tableId);
+		var playerId =values[2];
+		console.log(playerId);
+                var imageUrl = values[3];
+		    console.log(imageUrl);
+
+            	 console.log("call update player avaatar");
+           	this.tableManager.updateBoardPlayerAvatar(tableId,playerId,imageUrl);
+           }
+    },
     handlePerformAction : function(performAction){
         var actionType = Poker.ActionUtils.getActionType(performAction.action.type);
 

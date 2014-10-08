@@ -279,13 +279,15 @@ Poker.TableManager = Class.extend({
                 }
             );
         } else {
-            self.updatePlayerProfile(playerId,table,null);
+            self.updatePlayerAvatar(playerId,table,null);
             console.log("No loginToken available to request player info from player api");
         }
     },
     updatePlayerProfile : function(playerId,table,profile) {
         if(profile!=null) {
-            table.getLayoutManager().updateAvatar(playerId, profile.externalAvatarUrl);
+ //           table.getLayoutManager().updateAvatar(playerId, profile.externalAvatarUrl);
+  			var p = table.getPlayerById(playerId);
+            table.getLayoutManager().updateAvatar(playerId, p.avatarUrl);
             table.getLayoutManager().updateLevel(playerId,profile.level);
             if (profile.items && profile.items.award) {
                 table.getLayoutManager().updatePlayerAward(playerId, profile.items.award.imageUrl, profile.items.award.description);
@@ -293,6 +295,39 @@ Poker.TableManager = Class.extend({
             if (profile.items && profile.items.inventory) {
                 table.getLayoutManager().updatePlayerItem(playerId, profile.items.inventory.imageUrl, profile.items.inventory.description);
             }
+        } else {
+            table.getLayoutManager().updateAvatar(playerId, null);
+            table.getLayoutManager().updateLevel(playerId,-1);
+        }
+    },
+    updateBoardPlayerAvatar : function(tableId, playerId, avatarUrl) {
+
+    console.log("Inside updateBoardPlayerAvatar **********************************");
+     console.log(tableId);
+     console.log(playerId);
+        var table = this.tables.get(tableId);
+        var p = table.getPlayerById(playerId);
+        if(p == null) {
+            throw "Unable to find player to update avatar pid = " + playerId;
+        }
+
+        console.log("avatar set as ");
+        p.avatarUrl = avatarUrl;
+        console.log("before " + p.id);
+        p.id = playerId;
+        console.log("àfter " + p.id);
+        console.log(p.avatarUrl);
+        //p.avatarUrl = 'http://localhost/webplay/images/photo-1.jpg';
+        //p.avatarUrl = 'http://localhost/noavatar.png';
+        //this._notifyPlayerUpdated(tableId,p);
+        //var table = this.getTable(tableId);
+        console.log("call onplayer updated for player  as " + p.avatarUrl);
+        table.getLayoutManager().onPlayerUpdated(p, p.avatarUrl);
+
+    },
+    updatePlayerAvatar : function(playerId,table,profile) {
+        if(profile!=null) {
+            table.getLayoutManager().updateAvatar(playerId, profile.externalAvatarUrl);
         } else {
             table.getLayoutManager().updateAvatar(playerId, null);
             table.getLayoutManager().updateLevel(playerId,-1);
@@ -356,6 +391,7 @@ Poker.TableManager = Class.extend({
      * @param {Number} balance
      */
     updatePlayerBalance : function(tableId,playerId, balance) {
+        console.log("Ìnside updatePlayerBalance" + playerId);
         var table = this.tables.get(tableId);
         var p = table.getPlayerById(playerId);
         if(p == null) {
@@ -363,7 +399,7 @@ Poker.TableManager = Class.extend({
             return;
         }
         p.balance = balance;
-        table.getLayoutManager().onPlayerUpdated(p);
+        table.getLayoutManager().onPlayerUpdated(p,p.avatarUrl);
     },
 
     /**

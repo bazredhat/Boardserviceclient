@@ -363,13 +363,18 @@ Poker.TableLayoutManager = Class.extend({
         }
         return null;
     },
-    onPlayerUpdated : function(p) {
+    onPlayerUpdated : function(p, avatarUrl) {
+		console.log("Inside OnPlayerUpdated");
+				console.log("Inside OnPlayerUpdated as avatarUrl " + avatarUrl);
+
         var seat = this.getSeatByPlayerId(p.id);
         if(seat==null) {
             console.log("Unable to find player " + p.name + " seat");
             return;
         }
-        seat.updatePlayer(p);
+        console.log("call seat update " );
+
+        seat.updatePlayer(p, avatarUrl);
     },
     onPlayerStatusUpdated : function(p) {
         var seat = this.getSeatByPlayerId(p.id);

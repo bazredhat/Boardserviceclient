@@ -80,6 +80,9 @@
     <script src="${cp}/js/base/communication/poker-game/PokerPacketHandler.js" type="text/javascript"></script>
     <script src="${cp}/js/base/communication/poker-game/PokerRequestHandler.js"  type="text/javascript"></script>
     <script src="${cp}/js/base/communication/poker-game/PokerSequence.js" type="text/javascript"></script>
+    <script src="${cp}/js/base/ServiceSender.js" type="text/javascript"></script>
+    <script src="${cp}/js/base/base64_decode.js" type="text/javascript"></script>
+    
 
     <script src="${cp}/js/base/communication/lobby/LobbyPacketHandler.js" type="text/javascript"></script>
     <script src="${cp}/js/base/communication/lobby/LobbyRequestHandler.js" type="text/javascript"></script>

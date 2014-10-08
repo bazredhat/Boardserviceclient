@@ -8,6 +8,8 @@ Poker.Player = Class.extend({
     name : null,
     id :-1,
     balance : 0,
+    avatarUrl : null, 
+    
     /**
      * @type Poker.PlayerTableStatus
      */

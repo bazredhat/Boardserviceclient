@@ -123,6 +123,13 @@ Poker.AppCtx = Class.extend({
         };
 
 
+      var pokerPacketHandler = new Poker.PokerPacketHandler();
+        this.getPacketHandler = function() {
+            return pokerPacketHandler;
+        };
+
+
+
 
         var connectionManager = new Poker.ConnectionManager(settings.operatorId, settings.authCookie);
         /**
@@ -165,6 +172,11 @@ Poker.AppCtx = Class.extend({
          */
         this.getHandHistoryManager = function() {
             return handHistoryManager;
+        };
+
+        var serviceSender = new Poker.ServiceSender();
+        this.getServiceSender = function() {
+            return serviceSender;
         };
 
         var navigation = new Poker.Navigation();

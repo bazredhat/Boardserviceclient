@@ -12,7 +12,7 @@ Poker.CommunicationManager = Class.extend({
      * @type FIREBASE.Connector
      */
     connector : null,
-
+pkrPacketHandler:null,
     webSocketUrl : null,
     webSocketPort : null,
     secure : false,
@@ -34,6 +34,8 @@ Poker.CommunicationManager = Class.extend({
         this.webSocketUrl = webSocketUrl;
         this.webSocketPort = webSocketPort;
         this.tableManager = Poker.AppCtx.getTableManager();
+         this.pkrPacketHandler = Poker.AppCtx.getPacketHandler();
+
         this.connect();
     },
     /**
@@ -142,7 +144,7 @@ Poker.CommunicationManager = Class.extend({
 
 
         console.log("Connector connect: ", this.webSocketUrl, this.webSocketPort);
-        
+
         var useCometd = $.url().param("cometd") != undefined;
         var isSafari5 = function isSafari5() {
             var safari =  !!navigator.userAgent.match(' Safari/') && !navigator.userAgent.match(' Chrom') && !!navigator.userAgent.match(' Version/5.');
@@ -151,7 +153,7 @@ Poker.CommunicationManager = Class.extend({
             }
             return safari;
         };
-        
+
         if (useCometd || isSafari5()) {
             console.log("Using cometd adapter as fallback");
             this.connector.connect("FIREBASE.CometdAdapter", this.webSocketUrl, this.webSocketPort, "cometd", this.secure, function() {
@@ -174,7 +176,7 @@ Poker.CommunicationManager = Class.extend({
      */
     doLogin : function(username,password) {
         Poker.MyPlayer.password = password;
-        
+
         if (Poker.MyPlayer.pureToken) {
         	console.log("pure token");
         	var tokenArray = utf8.toByteArray(Poker.MyPlayer.loginToken);
@@ -183,7 +185,7 @@ Poker.CommunicationManager = Class.extend({
         	this.connector.login(username, password, Poker.SkinConfiguration.operatorId);
         }
     },
-    
+
 
     handlePacket : function (packet) {
         var tournamentId = -1;
@@ -266,7 +268,10 @@ Poker.CommunicationManager = Class.extend({
                 this.forceLogout(packet);
                 break;
             case FB_PROTOCOL.ServiceTransportPacket.CLASSID:
-                this.handleServicePacket(packet);
+            console.log("Inside handleServiceTransportPacket of tablePacketHandler");
+
+              	this.pkrPacketHandler.handleServiceTransportPacket(packet);
+          //      this.handleServicePacket(packet);
                 break;
             case FB_PROTOCOL.VersionPacket.CLASSID:
                 Poker.AppCtx.getPingManager().versionPacketReceived();
@@ -290,6 +295,45 @@ Poker.CommunicationManager = Class.extend({
         Poker.OperatorConfig.populate(config);
         console.log(config);
         Poker.AppCtx.getConnectionManager().onSettingsLoaded();
+    },
+    getAvatar : function(tableId,playerId, classId){
+        console.log("CommunicationHandler.getAvatar");
+        var serviceTransportPacket=new FB_PROTOCOL.ServiceTransportPacket();
+        var serviceData=new FIREBASE.ByteArray();
+	var code = '2';
+
+	console.log("INSIDE GETAVATAR*****************");
+	var pId = playerId.toString();
+	var tId = tableId.toString();
+
+	var request = code + ';' + tId + ';' + pId;
+		console.log(request);
+
+       serviceData.writeString(request);
+	//serviceData.writeUnsignedByte(playerId);
+
+	serviceTransportPacket.gameid=1;
+	serviceTransportPacket.seq=-1;
+	serviceTransportPacket.pid=playerId;
+	serviceTransportPacket.service='com.board.games.service.PokerBoardServiceContract';
+	serviceTransportPacket.idtype=FB_PROTOCOL.ServiceIdentifierEnum.CONTRACT;
+	// serviceData does not work??
+	//protocolObject.classId()
+	console.log(serviceData);
+	serviceTransportPacket.servicedata=FIREBASE.ByteArray.toBase64String(serviceData.createServiceDataArray(serviceTransportPacket.classId()));
+//	serviceTransportPacket.servicedata=FIREBASE.ByteArray.toBase64String(serviceData);
+console.log("INSIDE GETAVATAR*****************222222222222222222222222222222222222222222222222222222222222222222");
+	console.log(serviceTransportPacket.servicedata);
+
+	//var byteArray=protocolObject.save();
+	//gameTransportPacket.gamedata=FIREBASE.ByteArray.toBase64String(byteArray.createGameDataArray(protocolObject.classId()));
+
+
+//this.sendStyxGameData=function(pid,tableid,protocolObject){var transportPacket=FIREBASE.Styx.wrapInGameTransportPacket(pid,tableid,protocolObject);
+//this.sendProtocolObject(transportPacket)
+
+	console.log("*******************--------SERVICETRANSPORT: %o",serviceTransportPacket);
+        this.connector.sendProtocolObject(serviceTransportPacket);
     },
 
     handleServicePacket:function (servicePacket) {
@@ -531,7 +575,7 @@ var CustomConnector = function(a,b,c,d) {
 var LongPollingTransportImpl = function() {
     var _super = new org.cometd.LongPollingTransport();
     var that = org.cometd.Transport.derive(_super);
-    
+
     var _setHeaders = function(xhr, headers) {
         var headerName;
         if (headers) {
@@ -542,10 +586,10 @@ var LongPollingTransportImpl = function() {
                 xhr.setRequestHeader(headerName, headers[headerName])
             }
         }
-    };                
-    
+    };
+
     that.xhrSend = function(packet) {
-        return $.ajax({url: packet.url, async: packet.sync !== true, type: "POST", contentType: "application/json;charset=UTF-8", data: packet.body,withCredentials: true, 
+        return $.ajax({url: packet.url, async: packet.sync !== true, type: "POST", contentType: "application/json;charset=UTF-8", data: packet.body,withCredentials: true,
         	beforeSend: function(xhr) {
                 _setHeaders(xhr, packet.headers);
                 return true

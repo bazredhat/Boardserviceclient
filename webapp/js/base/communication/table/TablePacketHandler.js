@@ -10,6 +10,9 @@ Poker.TablePacketHandler = Class.extend({
 
     tableId : null,
 
+    serviceSender : null,
+
+
     /**
      * @constructor
      * @param {Number} tableId
@@ -17,12 +20,14 @@ Poker.TablePacketHandler = Class.extend({
     init : function(tableId) {
         this.tableManager = Poker.AppCtx.getTableManager();
         this.tableId = tableId;
+        this.serviceSender = Poker.AppCtx.getServiceSender();
     },
     handleSeatInfo:function (seatInfoPacket) {
         console.log(seatInfoPacket);
         console.log("seatInfo pid[" + seatInfoPacket.player.pid + "]  seat[" + seatInfoPacket.seat + "]");
         console.log(seatInfoPacket);
         this.tableManager.addPlayer(seatInfoPacket.tableid,seatInfoPacket.seat, seatInfoPacket.player.pid, seatInfoPacket.player.nick);
+        this.serviceSender.sendAvatarRequest(seatInfoPacket.tableid,seatInfoPacket.player.pid);
     },
     handleNotifyLeave:function (notifyLeavePacket) {
         this.tableManager.removePlayer(notifyLeavePacket.tableid,notifyLeavePacket.pid);
@@ -40,12 +45,15 @@ Poker.TablePacketHandler = Class.extend({
     handleNotifyJoin:function (notifyJoinPacket) {
         console.log("handle notify join");
         this.tableManager.addPlayer(notifyJoinPacket.tableid,notifyJoinPacket.seat, notifyJoinPacket.pid, notifyJoinPacket.nick);
+             this.serviceSender.sendAvatarRequest(notifyJoinPacket.tableid,notifyJoinPacket.pid);
     },
     handleJoinResponse : function (joinResponsePacket) {
         console.log(joinResponsePacket);
         console.log("join response seat = " + joinResponsePacket.seat + " player id = " + Poker.MyPlayer.id);
         if (joinResponsePacket.status === FB_PROTOCOL.JoinResponseStatusEnum.OK) {
             this.tableManager.addPlayer(joinResponsePacket.tableid,joinResponsePacket.seat, Poker.MyPlayer.id, Poker.MyPlayer.name);
+          	        this.serviceSender.sendAvatarRequest(joinResponsePacket.tableid,Poker.MyPlayer.id);
+
         } else {
             console.log("Join failed. Status: " + joinResponsePacket.status);
         }
